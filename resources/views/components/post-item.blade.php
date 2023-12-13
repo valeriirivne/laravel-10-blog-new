@@ -8,7 +8,7 @@
         <a href="#" class="text-blue-700 text-sm font-bold uppercase pb-4">
             {{ $category->title }}
         </a>
-            
+
         @endforeach
         <a href="#" class="text-3xl font-bold hover:text-gray-700 pb-4">{{ $post->title }}</a>
         <p href="#" class="text-sm pb-3">

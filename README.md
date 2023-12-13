@@ -3,6 +3,7 @@ mysql -h localhost --protocol=TCP -P 3306 -u sail -p
 SHOW DATABASES;
 SHOW TABLES;
 
+**MEMBER GROUP SECTION CONFIGS**
 From the commands and outputs you've provided, it seems that adding your user to the `docker` group didn't take effect immediately, or there might be some other issue preventing the non-`sudo` `docker ps` command from showing the running containers.
 
 Here's a step-by-step approach to troubleshoot the issue:
@@ -90,10 +91,13 @@ php artisan make:filament-user (aquilathe@gmail.com ; password: root)
 Code from my terminal:
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ sudo groups ${USER}
 valerii : valerii adm cdrom sudo dip plugdev lpadmin sambashare docker
+
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ groups ${USER}
 valerii : valerii adm cdrom sudo dip plugdev lpadmin sambashare docker
+
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ newgrp docker
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ sudo newgrp docker
+
 root@valbot:/home/valerii/LocalSites/laravel-10-blog-new# docker ps
 CONTAINER ID IMAGE COMMAND CREATED STATUS PORTS NAMES
 cf5b64199e92 mysql:5.7 "docker-entrypoint.s…" 2 days ago Up 8 minutes 3306/tcp, 33060/tcp laravel-10-new-blog-db
@@ -187,74 +191,85 @@ valerii@valbot:~/LocalSites/laravel-10-blog-new$ sudo docker ps
 CONTAINER ID IMAGE COMMAND CREATED STATUS PORTS NAMES
 cf5b64199e92 mysql:5.7 "docker-entrypoint.s…" 2 days ago Up 10 minutes 3306/tcp, 33060/tcp laravel-10-new-blog-db
 a8568b79b356 laravel-10-new-blog "docker-php-entrypoi…" 2 days ago Up 10 minutes 9000/tcp, 0.0.0.0:8000->80/tcp, :::8000->80/tcp laravel-10-new-blog-app
+
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ ls -l /var/run/docker.sock
 srw-rw---- 1 root docker 0 Dec 6 16:59 /var/run/docker.sock
-valerii@valbot:~/LocalSites/laravel-10-blog-new$
-
--   History restored
 
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ docker ps
 CONTAINER ID IMAGE COMMAND CREATED STATUS PORTS NAMES
+
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ sudo systemctl restart docker
-[sudo] password for valerii:  
+[sudo] password for valerii:
+
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ docker context ls
 NAME TYPE DESCRIPTION DOCKER ENDPOINT KUBERNETES ENDPOINT ORCHESTRATOR
 default moby Current DOCKER*HOST based configuration unix:///var/run/docker.sock  
-desktop-linux * moby Docker Desktop unix:///home/valerii/.docker/desktop/docker.sock  
+desktop-linux * moby Docker Desktop unix:///home/valerii/.docker/desktop/docker.sock
+
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ docker context use default
 default
 Current context is now "default"
+
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ docker context ls
 NAME TYPE DESCRIPTION DOCKER ENDPOINT KUBERNETES ENDPOINT ORCHESTRATOR
-default _ moby Current DOCKER_HOST based configuration unix:///var/run/docker.sock  
+default \_ moby Current DOCKER_HOST based configuration unix:///var/run/docker.sock  
 desktop-linux moby Docker Desktop unix:///home/valerii/.docker/desktop/docker.sock  
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ docker ps
 CONTAINER ID IMAGE COMMAND CREATED STATUS PORTS NAMES
 cf5b64199e92 mysql:5.7 "docker-entrypoint.s…" 2 days ago Up 2 minutes 3306/tcp, 33060/tcp laravel-10-new-blog-db
 a8568b79b356 laravel-10-new-blog "docker-php-entrypoi…" 2 days ago Up 2 minutes 9000/tcp, 0.0.0.0:8000->80/tcp, :::8000->80/tcp laravel-10-new-blog-app
-valerii@valbot:~/LocalSites/laravel-10-blog-new$ ./vendor/bin/sail ^C
+
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ ./vendor/bin/sail down
 [+] Running 3/3
-✔ Container laravel-10-blog-new_laravel.test_1 Removed 0.0s
+✔ Container laravel-10-blog-new\*laravel.test_1 Removed 0.0s
 ✔ Container laravel-10-blog-new_mysql_1 Remove... 0.0s
 ✔ Network laravel-10-blog-new_sail Removed 0.3s
+
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ ./vendor/bin/sail up -d
 [+] Running 3/3
 ✔ Network laravel-10-blog-new_sail Created 0.1s
 ✔ Container laravel-10-blog-new-mysql-1 Starte... 0.1s
 ✔ Container laravel-10-blog-new-laravel.test-1 Created 0.1s
 Error response from daemon: driver failed programming external connectivity on endpoint laravel-10-blog-new-laravel.test-1 (c118b9bb251b1d00038f1bdf74128c3456013616f9a9bb28203247f1b8bd9ff6): Error starting userland proxy: listen tcp4 0.0.0.0:80: bind: address already in use
+
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ sudo lsof -i :80
 [sudo] password for valerii:  
 COMMAND PID USER FD TYPE DEVICE SIZE/OFF NODE NAME
-apache2 908 root 4u IPv6 28311 0t0 TCP _:http (LISTEN)
+apache2 908 root 4u IPv6 28311 0t0 TCP \*:http (LISTEN)
 apache2 910 www-data 4u IPv6 28311 0t0 TCP _:http (LISTEN)
 apache2 911 www-data 4u IPv6 28311 0t0 TCP _:http (LISTEN)
+
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ sudo netstat -tulnp | grep :80
 tcp 0 0 0.0.0.0:8000 0.0.0.0:_ LISTEN 6809/docker-proxy  
 tcp6 0 0 :::80 :::_ LISTEN 908/apache2  
-tcp6 0 0 :::8000 :::\_ LISTEN 6817/docker-proxy  
+tcp6 0 0 :::8000 :::\_ LISTEN 6817/docker-proxy
+
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ sudo systemctl stop apache2
+
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ sudo systemctl disable apache2
 Synchronizing state of apache2.service with SysV service script with /lib/systemd/systemd-sysv-install.
 Executing: /lib/systemd/systemd-sysv-install disable apache2
 Removed /etc/systemd/system/multi-user.target.wants/apache2.service.
+
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ ./vendor/bin/sail up -d
 [+] Running 2/2
 ✔ Container laravel-10-blog-new-mysql-1 Runnin... 0.0s
 ✔ Container laravel-10-blog-new-laravel.test-1 Started 0.6s
+
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ docker ps
 CONTAINER ID IMAGE COMMAND CREATED STATUS PORTS NAMES
 ea4bb2c84d06 sail-8.2/app "start-container" 2 hours ago Up 2 hours 0.0.0.0:80->80/tcp, :::80->80/tcp, 0.0.0.0:5173->5173/tcp, :::5173->5173/tcp, 8000/tcp laravel-10-blog-new-laravel.test-1
 e77d5db34225 mysql/mysql-server:8.0 "/entrypoint.sh mysq…" 2 hours ago Up 2 hours (healthy) 0.0.0.0:3306->3306/tcp, :::3306->3306/tcp, 33060-33061/tcp laravel-10-blog-new-mysql-1
 cf5b64199e92 mysql:5.7 "docker-entrypoint.s…" 2 days ago Up 2 hours 3306/tcp, 33060/tcp laravel-10-new-blog-db
 a8568b79b356 laravel-10-new-blog "docker-php-entrypoi…" 2 days ago Up 2 hours 9000/tcp, 0.0.0.0:8000->80/tcp, :::8000->80/tcp laravel-10-new-blog-app
+
 valerii@valbot:~/LocalSites/laravel-10-blog-new$ php -v
 PHP 7.4.33 (cli) (built: Nov 22 2022 11:36:42) ( NTS )
 Copyright (c) The PHP Group
 Zend Engine v3.4.0, Copyright (c) Zend Technologies
 valerii@valbot:~/LocalSites/laravel-10-blog-new$
 
+**MYSQL CONFIG**
 /////////////////////////////////////////////////////
 Code from my terminal:
 Mysql:

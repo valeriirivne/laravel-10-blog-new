@@ -23,9 +23,10 @@ class TextWidget extends Model
         $widget = Cache::get('text-widget-' . $key, function () use ($key) {
             return TextWidget::query()->where('key', $key)->where('active', '=', 1)->first();
         });
+        // dd($widget->title);
 
         if ($widget) {
-            return $widget->content;
+            return $widget->title;
         }
 
         return '';
