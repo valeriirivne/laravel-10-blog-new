@@ -3,6 +3,8 @@ mysql -h localhost --protocol=TCP -P 3306 -u sail -p
 SHOW DATABASES;
 SHOW TABLES;
 
+To run laravel: ./vendor/bin/sail up
+
 **MEMBER GROUP SECTION CONFIGS**
 From the commands and outputs you've provided, it seems that adding your user to the `docker` group didn't take effect immediately, or there might be some other issue preventing the non-`sudo` `docker ps` command from showing the running containers.
 
@@ -420,3 +422,13 @@ docker inspect laravel-10-blog-new-adminer-1 provided detailed information about
 
 5. Connecting Adminer to the Correct Network:
    After identifying the issue, we edited the docker-compose.yml file to ensure that Adminer was connected to the correct network (laravel-10-blog-new_sail). By doing so, Adminer was able to resolve the service name mysql to the correct container and establish a connection.
+
+docker run --rm \
+ -u "$(id -u):$(id -g)" \
+ -v "$(pwd):/var/www/html" \
+ -w /var/www/html \
+ laravelsail/php81-composer:latest \
+ composer install --ignore-platform-reqs
+
+To stop all the containers:
+docker stop $(docker ps -aq)

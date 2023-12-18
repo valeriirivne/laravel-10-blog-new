@@ -29,7 +29,7 @@ class TextWidgetResource extends Resource
                 Forms\Components\FileUpload::make('image'),
                 Forms\Components\TextInput::make('title')
                     ->maxLength(2048),
-                Forms\Components\Textarea::make('content')
+                Forms\Components\RichEditor::make('content')
                     ->columnSpanFull(),
                 Forms\Components\Toggle::make('active')
                     ->required(),
