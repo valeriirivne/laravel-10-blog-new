@@ -423,12 +423,100 @@ docker inspect laravel-10-blog-new-adminer-1 provided detailed information about
 5. Connecting Adminer to the Correct Network:
    After identifying the issue, we edited the docker-compose.yml file to ensure that Adminer was connected to the correct network (laravel-10-blog-new_sail). By doing so, Adminer was able to resolve the service name mysql to the correct container and establish a connection.
 
-docker run --rm \
- -u "$(id -u):$(id -g)" \
- -v "$(pwd):/var/www/html" \
- -w /var/www/html \
- laravelsail/php81-composer:latest \
- composer install --ignore-platform-reqs
+1. docker run --rm \
+   -u "$(id -u):$(id -g)" \
+   -v "$(pwd):/var/www/html" \
+   -w /var/www/html \
+   laravelsail/php81-composer:latest \
+   composer install --ignore-platform-reqs
+
+1. cp .env.example .env
+   (DB_CONNECTION=mysql
+   DB_HOST=mysql
+   DB_PORT=3306
+   DB_DATABASE=laravel_10_blog_new
+   DB_USERNAME=sail
+   DB_PASSWORD=root)
+1. ./vendor/bin/sail up
+1. ./vendor/bin/sail artisan key:generate
+1. ./vendor/bin/sail artisan migrate
+1. ./vendor/bin/sail artisan db:seed
+1. ./vendor/bin/sail npm install
+1. ./vendor/bin/sail npm run dev
+   then you need to go into sail bash:
+1. ./vendor/bin/sail bash:
+   php artisan make:filament-user (aquilathe@gmail.com ; password: root) (APP_URL=http://localhost and localhost/admin)
 
 To stop all the containers:
 docker stop $(docker ps -aq)
+
+/////////////////////////////////
+Docker Volume
+When you encounter a situation where your current Laravel Sail application is using a database password from a previous application, it's likely due to the persistence of Docker volumes. Docker volumes are used to persist data across container restarts and even after containers are deleted. Here's what might be happening in your case:
+
+Docker Volume Persistence:
+
+If your previous and current applications are using the same Docker volume name (as specified in the docker-compose.yml file), and if that volume was not deleted when you stopped the previous application, it will still contain the data (including the database with its users and passwords) from the previous application.
+In your docker-compose.yml file, you have a volume defined for MySQL (sail-mysql). If this volume was used by your previous application and wasn't deleted, it retains the old database state.
+Resolving the Issue:
+
+To resolve this, you need to remove the old Docker volume and create a new one. This will erase all data in the existing volume, so ensure you have backups of any important data.
+First, bring down your Docker containers:
+bash
+Copy code
+./vendor/bin/sail down
+Then, remove the Docker volume. You can list all volumes and then remove the specific one:
+bash
+Copy code
+docker volume ls
+docker volume rm sail-mysql
+After removing the volume, when you run ./vendor/bin/sail up -d, Docker will create a new volume with the new database configuration as specified in your current .env file and docker-compose.yml.
+Caution:
+
+Be very cautious with this operation as it will delete the database and all its data. Only proceed if you are sure there's no important data in the database or if you have a backup.
+Alternative Approach:
+
+If you prefer not to delete the volume, you can access the MySQL container and change the password manually to match what is in your .env file.
+However, if your .env file and docker-compose.yml are configured correctly and you still face issues, recreating the volume is often the more straightforward solution.
+Future Practices:
+
+To avoid such conflicts in the future, consider using different volume names for different projects, especially when the projects are likely to have overlapping database names or credentials.
+Remember, Docker volumes are an essential aspect of container data persistence, and understanding how they work is crucial in managing data across different containerized applications.
+
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+
+        <title>{{ config('app.name', 'Laravel') }}</title>
+
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+        <!-- Scripts -->
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    </head>
+    <body class="font-sans antialiased">
+        <div class="min-h-screen bg-gray-100">
+            @include('layouts.navigation')
+
+            <!-- Page Heading -->
+            @if (isset($header))
+                <header class="bg-white shadow">
+                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        {{ $header }}
+                    </div>
+                </header>
+            @endif
+
+            <!-- Page Content -->
+            <main>
+                {{ $slot }}
+            </main>
+        </div>
+    </body>
+
+</html>

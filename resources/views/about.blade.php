@@ -1,25 +1,3 @@
-<x-app-layout>
-    <section class="w-full md:w-full flex flex-col items-center px-3">
-        <article class="w-full flex flex-col shadow my-4">
-            <!-- Article Image -->
-            <a href="#" class="hover:opacity-75">
-
-               
-                <img src="/storage/{{$widget->image}}">       
-            </a>
-            <div class="bg-white flex flex-col justify-start p-6">
-             
-                <h1 class="text-3xl font-bold hover:text-gray-700 pb-4">{{ $widget->title }}</h1>
-
-             <div>
-                {{!!$widget->content!!}}
-             </div>
-            </div>          
-        </article>
-    </section>
-</x-app-layout>
-
-{{-- 
 <x-app-layout meta-title="TheCodeholic Blog - About us">
 
     <div class="container mx-auto flex flex-wrap py-6">
@@ -29,7 +7,7 @@
 
             <article class="flex flex-col shadow my-4">
                 @if($widget && $widget->image)
-                    <img src="/storage/{{ $widget->image }}">
+                <img src="/storage/{{ $widget->image }}">
                 @endif
 
                 <div class="bg-white flex flex-col justify-start p-6">
@@ -44,4 +22,4 @@
         </section>
 
     </div>
-</x-app-layout> --}}
+</x-app-layout>
